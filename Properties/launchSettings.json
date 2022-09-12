@@ -14,7 +14,7 @@
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "https://localhost:7296;http://localhost:5044",
+      "applicationUrl": "https://travelike.herokuapp.com:7296;http://travelike.herokuapp.com:5044",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
