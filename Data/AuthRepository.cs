@@ -6,9 +6,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Google.Apis.Drive.v3;
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
 
 namespace dotnet_rpg.Data
 {
@@ -22,18 +19,7 @@ namespace dotnet_rpg.Data
             _context = context;
         }
         public async Task<ServiceResponse<string>> Login(string username, string password)
-        {
-            // Account account = new Account(
-            //     "du5w56akk",
-            //     "642318848454273",
-            //     "62gH_RWfkeWLpbonbLyVCX24Qfs");
-            // Cloudinary cloudinary = new Cloudinary(account);
-
-            // var uploadParams = new ImageUploadParams(){
-            // File = new FileDescription(@"https://upload.wikimedia.org/wikipedia/commons/a/ae/Olympic_flag.jpg"),
-            // PublicId = "olympic_flag"};
-            // var uploadResult = cloudinary.Upload(uploadParams);
-            
+        { 
             var response = new ServiceResponse<string>();
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Username.ToLower().Equals(username.ToLower()));
@@ -57,8 +43,18 @@ namespace dotnet_rpg.Data
 
         public async Task<ServiceResponse<int>> Register(User user, string password)
         {
-            
             ServiceResponse<int> response = new ServiceResponse<int>();
+            bool isRegistered = false;
+            if(await _context.Users.AnyAsync(u => u.Username.ToLower() == user.Username.ToLower()))
+            {
+                isRegistered = true;
+                response.Success = false;
+                response.Message = "User already exists!";
+                return response;
+            }
+
+
+
             if (await UserExists(user.Username))
             {
                 response.Success = false;
@@ -119,7 +115,7 @@ namespace dotnet_rpg.Data
             SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(1),
+                Expires = DateTime.Now.AddHours(1),
                 SigningCredentials = creds
             };
 

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using dotnet_rpg.Data;
 using dotnet_rpg.Dtos.Character;
 using Microsoft.EntityFrameworkCore;
@@ -174,5 +176,65 @@ namespace dotnet_rpg.Services.CharacterService
             }
             return response;
         }
+
+        public async Task<ServiceResponse<string>> UploadPhoto(int id)
+        {
+            var response = new ServiceResponse<string>();
+            Account account = new Account(
+                "du5w56akk",
+                "642318848454273",
+                "62gH_RWfkeWLpbonbLyVCX24Qfs");
+            Cloudinary cloudinary = new Cloudinary(account);
+            cloudinary.Api.Secure = true;
+
+            var uploadParams = new ImageUploadParams()
+            {
+                File = new FileDescription(@"https://upload.wikimedia.org/wikipedia/commons/a/ae/Olympic_flag.jpg"),
+                PublicId = "olympic_flag"
+            };
+            var uploadResult = cloudinary.Upload(uploadParams);
+            response.Data = uploadResult.Url.ToString();
+            return response;
+        }
+
+        public async Task<ServiceResponse<string>> UploadImage()
+        {
+            var response = new ServiceResponse<string>();
+            Account account = new Account(
+                "du5w56akk",
+                "642318848454273",
+                "62gH_RWfkeWLpbonbLyVCX24Qfs");
+            Cloudinary cloudinary = new Cloudinary(account);
+            cloudinary.Api.Secure = true;
+
+            var file = new FileInfo(_httpContextAccessor.HttpContext.Request.Form.Files["Image"].FileName);
+            string filename = file.ToString().Substring(0, file.ToString().Length - file.Extension.ToString().Length);
+            //var filepath = new FileInfo(_httpContextAccessor.HttpContext.Request.Form.Files["Image"].FileName);
+            //var filepath = _httpContextAccessor.HttpContext.Request.Form.Files["Image"].;
+            //var filePath = Path.Combine("image", $"{DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss")}_signature_{extension.Extension}");
+            
+            var filepath = Path.Combine("Upload", $"{file}");
+            using (var stream = System.IO.File.Create(filepath))
+            {
+                await _httpContextAccessor.HttpContext.Request.Form.Files["Image"].CopyToAsync(stream);
+            }
+            var uploadParams = new ImageUploadParams()
+            {
+                File = new FileDescription(@$"{filepath}"),
+                // File = new FileDescription(_httpContextAccessor.HttpContext.Request.Form.Files["Image"])
+                // File = new FileDescription(httpRequest.Form.Files["Image"].FileName), 
+                //File = new FileDescription(@"https://upload.wikimedia.org/wikipedia/commons/a/ae/Olympic_flag.jpg"),
+                PublicId = $"{DateTime.Now.ToString("yyyy-MM-dd:hh-mm-ss")}_{filename}"
+            };
+            var uploadResult = cloudinary.Upload(uploadParams);
+            response.Data = uploadResult.Url.ToString();
+            //response.Data = result.ToString();
+            return response;
+        }
+        //private int Test() => int.Parse(_httpContextAccessor.HttpContext.User
+        //    .FindFirstValue(ClaimTypes.NameIdentifier));
+        //private void GetImageInfo() => _httpContextAccessor.HttpContext.Request.Form.Files["Image"];
+        //int.Parse(_httpContextAccessor.HttpContext.User
+        //    .FindFirstValue(ClaimTypes.NameIdentifier));
     }
 }

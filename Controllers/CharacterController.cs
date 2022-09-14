@@ -71,5 +71,17 @@ namespace dotnet_rpg.Controllers
         {
             return Ok(await characterService.AddCharacterSkill(newCharacterSkill));
         }
+        [AllowAnonymous]
+        [HttpPost("UploadPhoto")]
+        public async Task<ActionResult<ServiceResponse<string>>> UploadPhoto(int id)
+        {
+            return Ok(await characterService.UploadPhoto(id));
+        }
+        [AllowAnonymous]
+        [HttpPost("UploadImage")]
+        public async Task<ActionResult<ServiceResponse<string>>> UploadImage()
+        {
+            return Ok(await characterService.UploadImage());
+        }
     }
 }
