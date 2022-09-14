@@ -207,28 +207,44 @@ namespace dotnet_rpg.Services.CharacterService
             Cloudinary cloudinary = new Cloudinary(account);
             cloudinary.Api.Secure = true;
 
+            //string file2 = System.IO.Path.GetFullPath(_httpContextAccessor.HttpContext.Request.PathBase);
+
+            var uploadFile = _httpContextAccessor.HttpContext.Request.Form.Files["Image"];
             var file = new FileInfo(_httpContextAccessor.HttpContext.Request.Form.Files["Image"].FileName);
             string filename = file.ToString().Substring(0, file.ToString().Length - file.Extension.ToString().Length);
             //var filepath = new FileInfo(_httpContextAccessor.HttpContext.Request.Form.Files["Image"].FileName);
             //var filepath = _httpContextAccessor.HttpContext.Request.Form.Files["Image"].;
             //var filePath = Path.Combine("image", $"{DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss")}_signature_{extension.Extension}");
             
-            var filepath = Path.Combine("Upload", $"{file}");
-            using (var stream = System.IO.File.Create(filepath))
+            using (var filestream = uploadFile.OpenReadStream())
             {
-                await _httpContextAccessor.HttpContext.Request.Form.Files["Image"].CopyToAsync(stream);
+                var uploadUpload = new ImageUploadParams
+                {
+                    File = new FileDescription(uploadFile.FileName, filestream),
+                    //Transformation = new Transformation().StartOffset("0").EndOffset("60").Crop("fill")
+                    PublicId = $"{DateTime.Now.ToString("yyyy-MM-ddThh-mm-ss")}_{filename}"
+                };
+                var uploadResult = cloudinary.Upload(uploadUpload);
+                response.Data = uploadResult.Url.ToString();
+                return response;
             }
-            var uploadParams = new ImageUploadParams()
-            {
-                File = new FileDescription(@$"{filepath}"),
-                // File = new FileDescription(_httpContextAccessor.HttpContext.Request.Form.Files["Image"])
-                // File = new FileDescription(httpRequest.Form.Files["Image"].FileName), 
-                //File = new FileDescription(@"https://upload.wikimedia.org/wikipedia/commons/a/ae/Olympic_flag.jpg"),
-                PublicId = $"{DateTime.Now.ToString("yyyy-MM-dd:hh-mm-ss")}_{filename}"
-            };
-            var uploadResult = cloudinary.Upload(uploadParams);
-            response.Data = uploadResult.Url.ToString();
-            //response.Data = result.ToString();
+            
+            // var filepath = Path.Combine("Upload", $"{file}");
+            // using (var stream = System.IO.File.Create(filepath))
+            // {
+            //     await _httpContextAccessor.HttpContext.Request.Form.Files["Image"].CopyToAsync(stream);
+            // }
+            // var uploadParams = new ImageUploadParams()
+            // {
+            //     File = new FileDescription(@$"{filepath}"),
+            //     // File = new FileDescription(_httpContextAccessor.HttpContext.Request.Form.Files["Image"])
+            //     // File = new FileDescription(httpRequest.Form.Files["Image"].FileName), 
+            //     //File = new FileDescription(@"https://upload.wikimedia.org/wikipedia/commons/a/ae/Olympic_flag.jpg"),
+            //     PublicId = $"{DateTime.Now.ToString("yyyy-MM-dd:hh-mm-ss")}_{filename}"
+            // };
+            // //var uploadResult = cloudinary.Upload(uploadParams);
+            // response.Data = uploadResult.Url.ToString();
+            // //response.Data = file2.ToString();
             return response;
         }
         //private int Test() => int.Parse(_httpContextAccessor.HttpContext.User
